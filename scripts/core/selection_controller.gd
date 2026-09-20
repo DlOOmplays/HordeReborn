@@ -127,4 +127,4 @@ func _add_unit(unit: PlaceholderUnit) -> void:
 
 func _issue_move_command() -> void:
 	if _command_controller != null and not _selected_units.is_empty():
-		_command_controller.issue_move(_selected_units, get_global_mouse_position())
+		_command_controller.issue_context_command(_selected_units, get_global_mouse_position())

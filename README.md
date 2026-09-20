@@ -34,6 +34,15 @@ The current foundation launches a procedural RTS test field with a grid, terrain
 - Right-click movement commands
 - Smooth basic movement with formation spreading
 
+## Phase 2: Combat foundation
+
+- Player and enemy team/faction identity
+- Reusable health and melee-combat components
+- Right-click attack commands against enemy units
+- Damage, health bars, hit feedback, and clean unit death removal
+- Basic enemy target acquisition and melee combat AI
+- Death-time cleanup of selection and combat-target references
+
 ## Current phase
 
-Phase 0: Godot project foundation. This is deliberately not a full RTS implementation yet. Next work should add selection and move-command interaction before introducing gameplay systems such as combat or economy.
+Phase 2: RTS combat foundation. The project now supports placeholder unit selection, movement, melee combat, and basic enemy combat AI; economy, buildings, and advanced RTS systems remain future work.

@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/map/test_world.gd" id="1_world"]
 [ext_resource type="Script" path="res://scripts/core/rts_camera.gd" id="2_camera"]
@@ -6,6 +6,7 @@
 [ext_resource type="Script" path="res://scripts/ui/hud.gd" id="4_hud"]
 [ext_resource type="Script" path="res://scripts/core/move_command_controller.gd" id="5_commands"]
 [ext_resource type="Script" path="res://scripts/core/selection_controller.gd" id="6_selection"]
+[ext_resource type="Script" path="res://combat_lifecycle_coordinator.gd" id="7_lifecycle"]
 
 [node name="Main" type="Node2D"]
 
@@ -20,6 +21,10 @@ script = ExtResource("6_selection")
 command_controller_path = NodePath("../CommandController")
 
 [node name="PlaceholderUnits" type="Node2D" parent="."]
+
+[node name="CombatLifecycleCoordinator" type="Node" parent="."]
+script = ExtResource("7_lifecycle")
+selection_controller_path = NodePath("../SelectionController")
 
 [node name="Worker" parent="PlaceholderUnits" instance=ExtResource("3_unit")]
 position = Vector2(1380, 960)
@@ -40,6 +45,24 @@ team_color = Color(0.31, 0.74, 0.48, 1)
 position = Vector2(1660, 1045)
 unit_name = "Scout"
 team_color = Color(0.95, 0.66, 0.25, 1)
+
+[node name="EnemyOne" parent="PlaceholderUnits" instance=ExtResource("3_unit")]
+position = Vector2(2100, 910)
+unit_name = "Enemy Raider"
+team = 1
+team_color = Color(0.86, 0.28, 0.25, 1)
+
+[node name="EnemyTwo" parent="PlaceholderUnits" instance=ExtResource("3_unit")]
+position = Vector2(2190, 1010)
+unit_name = "Enemy Raider"
+team = 1
+team_color = Color(0.78, 0.20, 0.34, 1)
+
+[node name="EnemyThree" parent="PlaceholderUnits" instance=ExtResource("3_unit")]
+position = Vector2(2140, 1110)
+unit_name = "Enemy Guard"
+team = 1
+team_color = Color(0.70, 0.24, 0.42, 1)
 
 [node name="Camera" type="Camera2D" parent="."]
 position = Vector2(1600, 1000)

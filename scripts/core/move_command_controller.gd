@@ -7,14 +7,30 @@ extends Node2D
 var _marker_position := Vector2.ZERO
 var _has_marker := false
 
+func issue_context_command(units: Array[PlaceholderUnit], requested_destination: Vector2) -> void:
+	if units.is_empty():
+		return
+	var attack_target := _find_attack_target(units, requested_destination)
+	if attack_target != null:
+		_issue_attack(units, attack_target)
+		return
+	issue_move(units, requested_destination)
+
 func issue_move(units: Array[PlaceholderUnit], requested_destination: Vector2) -> void:
 	if units.is_empty():
 		return
 	var destination := _clamp_to_playable_bounds(requested_destination)
 	var offsets := _create_formation_offsets(units.size())
 	for index in units.size():
-		units[index].move_to(_clamp_to_playable_bounds(destination + offsets[index]))
+		units[index].command_move(_clamp_to_playable_bounds(destination + offsets[index]))
 	_marker_position = destination
+	_has_marker = true
+	queue_redraw()
+
+func _issue_attack(units: Array[PlaceholderUnit], target: PlaceholderUnit) -> void:
+	for unit in units:
+		unit.attack_target(target)
+	_marker_position = target.global_position
 	_has_marker = true
 	queue_redraw()
 
@@ -39,3 +55,13 @@ func _create_formation_offsets(unit_count: int) -> Array[Vector2]:
 
 func _clamp_to_playable_bounds(world_position: Vector2) -> Vector2:
 	return world_position.clamp(playable_bounds.position, playable_bounds.end)
+
+func _find_attack_target(units: Array[PlaceholderUnit], world_position: Vector2) -> PlaceholderUnit:
+	for node in get_tree().get_nodes_in_group(&"combat_units"):
+		if node is PlaceholderUnit:
+			var candidate := node as PlaceholderUnit
+			if not candidate.is_valid_combat_target() or candidate.team == units[0].team:
+				continue
+			if candidate.contains_world_point(world_position):
+				return candidate
+	return null
