@@ -1,0 +1,22 @@
+# Godot generated state and import cache
+.godot/
+.import/
+
+# Imported/exported build artifacts
+*.import
+*.translation
+export/
+build/
+
+# Platform and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.tmp
+
+# Godot Mono/.NET generated files (kept out if C# is added later)
+.mono/
+data_*/
+mono_crash.*.json
