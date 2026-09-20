@@ -26,6 +26,14 @@ HordeReborn is an original 2D real-time strategy game, inspired by the classic R
 
 The current foundation launches a procedural RTS test field with a grid, terrain props, placeholder units, an RTS camera, and a small instruction overlay. Use **WASD** or arrow keys to pan; use the mouse wheel to zoom.
 
+## Phase 1: Unit control
+
+- Unit selection and drag selection
+- Multi-selection and Shift add/remove selection
+- Procedural selection indicators
+- Right-click movement commands
+- Smooth basic movement with formation spreading
+
 ## Current phase
 
 Phase 0: Godot project foundation. This is deliberately not a full RTS implementation yet. Next work should add selection and move-command interaction before introducing gameplay systems such as combat or economy.

@@ -5,7 +5,7 @@ func _draw() -> void:
 	draw_style_box(_panel_style(Color(0.04, 0.08, 0.07, 0.85)), panel)
 	draw_string(ThemeDB.fallback_font, Vector2(38, 51), "HORDE REBORN", HORIZONTAL_ALIGNMENT_LEFT, -1, 24, Color("e8d9a6"))
 	draw_string(ThemeDB.fallback_font, Vector2(38, 78), "Phase 0  •  RTS test environment", HORIZONTAL_ALIGNMENT_LEFT, -1, 15, Color("c4d3c7"))
-	draw_string(ThemeDB.fallback_font, Vector2(38, 101), "WASD / arrows: pan   •   wheel: zoom", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color("91b3a0"))
+	draw_string(ThemeDB.fallback_font, Vector2(38, 101), "Select: left / drag / shift   •   Move: right-click", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color("91b3a0"))
 
 func _panel_style(color: Color) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
