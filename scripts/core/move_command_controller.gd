@@ -8,28 +8,33 @@ var _marker_position := Vector2.ZERO
 var _has_marker := false
 
 func issue_context_command(units: Array[PlaceholderUnit], requested_destination: Vector2) -> void:
-	if units.is_empty():
+	var valid_units := _get_valid_command_units(units)
+	if valid_units.is_empty():
 		return
-	var attack_target := _find_attack_target(units, requested_destination)
+	var attack_target := _find_attack_target(valid_units, requested_destination)
 	if attack_target != null:
-		_issue_attack(units, attack_target)
+		_issue_attack(valid_units, attack_target)
 		return
-	issue_move(units, requested_destination)
+	issue_move(valid_units, requested_destination)
 
 func issue_move(units: Array[PlaceholderUnit], requested_destination: Vector2) -> void:
-	if units.is_empty():
+	var valid_units := _get_valid_command_units(units)
+	if valid_units.is_empty():
 		return
 	var destination := _clamp_to_playable_bounds(requested_destination)
-	var offsets := _create_formation_offsets(units.size())
-	for index in units.size():
-		units[index].command_move(_clamp_to_playable_bounds(destination + offsets[index]))
+	var offsets := _create_formation_offsets(valid_units.size())
+	for index in valid_units.size():
+		valid_units[index].command_move(_clamp_to_playable_bounds(destination + offsets[index]))
 	_marker_position = destination
 	_has_marker = true
 	queue_redraw()
 
 func _issue_attack(units: Array[PlaceholderUnit], target: PlaceholderUnit) -> void:
+	if not is_instance_valid(target) or not target.is_valid_combat_target():
+		return
 	for unit in units:
-		unit.attack_target(target)
+		if is_instance_valid(unit) and unit.is_valid_combat_target():
+			unit.attack_target(target)
 	_marker_position = target.global_position
 	_has_marker = true
 	queue_redraw()
@@ -65,3 +70,10 @@ func _find_attack_target(units: Array[PlaceholderUnit], world_position: Vector2)
 			if candidate.contains_world_point(world_position):
 				return candidate
 	return null
+
+func _get_valid_command_units(units: Array[PlaceholderUnit]) -> Array[PlaceholderUnit]:
+	var valid_units: Array[PlaceholderUnit] = []
+	for unit in units:
+		if is_instance_valid(unit) and unit.is_valid_combat_target():
+			valid_units.append(unit)
+	return valid_units

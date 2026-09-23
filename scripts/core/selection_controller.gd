@@ -15,6 +15,9 @@ var _additive_selection := false
 
 @onready var _command_controller: MoveCommandController = get_node_or_null(command_controller_path) as MoveCommandController
 
+func _process(_delta: float) -> void:
+	_prune_invalid_selection()
+
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		_handle_mouse_button(event)
@@ -111,7 +114,8 @@ func set_selection(units: Array[PlaceholderUnit]) -> void:
 
 func clear_selection() -> void:
 	for unit in _selected_units:
-		unit.set_selected(false)
+		if is_instance_valid(unit):
+			unit.set_selected(false)
 	_selected_units.clear()
 
 func toggle_unit(unit: PlaceholderUnit) -> void:
@@ -122,9 +126,17 @@ func toggle_unit(unit: PlaceholderUnit) -> void:
 		_add_unit(unit)
 
 func _add_unit(unit: PlaceholderUnit) -> void:
+	if not is_instance_valid(unit) or not unit.is_selectable or _selected_units.has(unit):
+		return
 	_selected_units.append(unit)
 	unit.set_selected(true)
 
+func _prune_invalid_selection() -> void:
+	for unit in _selected_units.duplicate():
+		if not is_instance_valid(unit) or not unit.is_selectable or unit.is_dead:
+			_selected_units.erase(unit)
+
 func _issue_move_command() -> void:
-	if _command_controller != null and not _selected_units.is_empty():
+	_prune_invalid_selection()
+	if _command_controller != null and is_instance_valid(_command_controller) and not _selected_units.is_empty():
 		_command_controller.issue_context_command(_selected_units, get_global_mouse_position())

@@ -43,6 +43,13 @@ The current foundation launches a procedural RTS test field with a grid, terrain
 - Basic enemy target acquisition and melee combat AI
 - Death-time cleanup of selection and combat-target references
 
+## Phase 3: Navigation foundation
+
+- Native `NavigationRegion2D` and `NavigationAgent2D` pathfinding
+- Generated navigable ground with impassable river, trees, rocks, and wall barrier
+- Routed movement and combat pursuit with agent avoidance
+- Graceful stop behavior for unreachable navigation targets
+
 ## Current phase
 
-Phase 2: RTS combat foundation. The project now supports placeholder unit selection, movement, melee combat, and basic enemy combat AI; economy, buildings, and advanced RTS systems remain future work.
+Phase 3: RTS navigation foundation. The project now supports routed movement and combat pursuit around procedural obstacles; the river is intentionally non-walkable until a future crossing system is added.

@@ -1,6 +1,8 @@
 class_name PlaceholderUnit
 extends Node2D
 
+signal unit_died(unit: PlaceholderUnit)
+
 enum Team { PLAYER, ENEMY }
 
 @export var unit_name := "Unit"
@@ -10,17 +12,20 @@ enum Team { PLAYER, ENEMY }
 @export var arrival_distance := 4.0
 @export var personal_space := 36.0
 @export var playable_bounds := Rect2(0, 0, 3200, 2000)
+@export var navigation_repath_distance := 36.0
 
 var is_selectable := false
 var is_selected := false
 var is_dead := false
 var _destination := Vector2.ZERO
 var _has_destination := false
+var _last_navigation_target := Vector2.INF
 var _hit_flash_remaining := 0.0
 var _attack_flash_remaining := 0.0
 
 @onready var health: HealthComponent = get_node_or_null("HealthComponent") as HealthComponent
 @onready var combat: CombatComponent = get_node_or_null("CombatComponent") as CombatComponent
+@onready var navigation_agent: NavigationAgent2D = get_node_or_null("NavigationAgent2D") as NavigationAgent2D
 
 func _ready() -> void:
 	add_to_group(&"selectable_units")
@@ -29,15 +34,17 @@ func _ready() -> void:
 	if health != null:
 		health.damaged.connect(_on_damaged)
 		health.died.connect(_on_died)
+	if navigation_agent != null:
+		navigation_agent.velocity_computed.connect(_on_navigation_velocity_computed)
 
 func _physics_process(delta: float) -> void:
 	if is_dead:
 		return
-	var velocity := _movement_velocity()
-	velocity += _separation_velocity()
-	if velocity != Vector2.ZERO:
-		global_position += velocity * delta
-		global_position = global_position.clamp(playable_bounds.position, playable_bounds.end)
+	var desired_velocity := _movement_velocity()
+	if navigation_agent != null and navigation_agent.avoidance_enabled:
+		navigation_agent.velocity = desired_velocity
+	else:
+		_apply_velocity(desired_velocity, delta)
 
 func _process(delta: float) -> void:
 	if _hit_flash_remaining > 0.0 or _attack_flash_remaining > 0.0:
@@ -50,26 +57,32 @@ func move_to(destination: Vector2) -> void:
 		return
 	_destination = destination.clamp(playable_bounds.position, playable_bounds.end)
 	_has_destination = true
+	if navigation_agent != null and _destination.distance_to(_last_navigation_target) >= navigation_repath_distance:
+		navigation_agent.target_position = _destination
+		_last_navigation_target = _destination
 
 func command_move(destination: Vector2) -> void:
-	if combat != null:
+	if combat != null and is_instance_valid(combat):
 		combat.clear_target()
 	move_to(destination)
 
 func stop_movement() -> void:
 	_has_destination = false
+	_last_navigation_target = Vector2.INF
+	if navigation_agent != null:
+		navigation_agent.target_position = global_position
 
 func attack_target(target: PlaceholderUnit) -> void:
-	if is_dead or combat == null:
+	if is_dead or combat == null or not is_instance_valid(combat):
 		return
 	combat.set_target(target)
 
 func receive_attack(amount: float) -> void:
-	if health != null:
+	if health != null and is_instance_valid(health):
 		health.take_damage(amount)
 
 func is_valid_combat_target() -> bool:
-	return not is_dead and health != null and not health.is_dead and is_inside_tree()
+	return not is_dead and health != null and is_instance_valid(health) and not health.is_dead and is_inside_tree()
 
 func show_attack_feedback() -> void:
 	_attack_flash_remaining = 0.12
@@ -91,10 +104,29 @@ func _movement_velocity() -> Vector2:
 		return Vector2.ZERO
 	var distance := global_position.distance_to(_destination)
 	if distance <= arrival_distance:
-		global_position = _destination
-		_has_destination = false
+		stop_movement()
 		return Vector2.ZERO
-	return global_position.direction_to(_destination) * movement_speed
+	if navigation_agent == null:
+		return global_position.direction_to(_destination) * movement_speed
+	if navigation_agent.is_navigation_finished():
+		# A finished path can mean arrival or an unreachable target; either case stops safely.
+		stop_movement()
+		return Vector2.ZERO
+	var next_waypoint := navigation_agent.get_next_path_position()
+	if next_waypoint == Vector2.ZERO:
+		stop_movement()
+		return Vector2.ZERO
+	return global_position.direction_to(next_waypoint) * movement_speed
+
+func _on_navigation_velocity_computed(safe_velocity: Vector2) -> void:
+	if not is_dead:
+		_apply_velocity(safe_velocity, get_physics_process_delta_time())
+
+func _apply_velocity(velocity: Vector2, delta: float) -> void:
+	if velocity == Vector2.ZERO:
+		return
+	global_position += velocity * delta
+	global_position = global_position.clamp(playable_bounds.position, playable_bounds.end)
 
 func _separation_velocity() -> Vector2:
 	var separation := Vector2.ZERO
@@ -141,6 +173,9 @@ func _on_died() -> void:
 	is_selectable = false
 	is_selected = false
 	_has_destination = false
+	if combat != null and is_instance_valid(combat):
+		combat.clear_target()
+	unit_died.emit(self)
 	remove_from_group(&"selectable_units")
 	remove_from_group(&"combat_units")
 	modulate = Color(0.3, 0.3, 0.3, 1.0)

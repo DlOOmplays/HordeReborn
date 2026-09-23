@@ -16,3 +16,13 @@ script = ExtResource("3_combat")
 
 [node name="EnemyCombatAI" type="Node" parent="."]
 script = ExtResource("4_ai")
+
+[node name="NavigationAgent2D" type="NavigationAgent2D" parent="."]
+path_desired_distance = 10.0
+target_desired_distance = 12.0
+path_max_distance = 48.0
+avoidance_enabled = true
+radius = 18.0
+neighbor_distance = 110.0
+max_neighbors = 8
+time_horizon_agents = 1.2
